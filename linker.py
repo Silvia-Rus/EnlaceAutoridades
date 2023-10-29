@@ -1,17 +1,25 @@
 from pymarc import MARCReader
-from getters import getDollar9
-from getters import get1XXDollarA
+from getters import getFieldDollarA
 from getters import getHasUnlinkedAuth
+from getters import getFields
+from getters import getBiblioNumber
 
+# from getters import getLenListFields
 
 # biblios = 'mrcFiles/BIB_TODOS.mrc'
-biblios = 'mrcFiles/BIB_14REG.mrc'
-# biblios = 'mrcFiles/BIB_1REG.mrc'
+# biblios = 'mrcFiles/BIB_14REG.mrc'
+
+# biblios = 'EnlaceAutoridades-main/mrcFiles/BIB_14REG.mrc'
+
+biblios = 'mrcFiles/BIB_1REG.mrc'
 
 perso = 'mrcFiles/AUT_PERSO_NAME.mrc'
-# perso = 'mrcFiles/AUT_PERSO_NAME_prueba.mrc'
+# perso = 'mrcFiles/AUT_PERSO_NAME_test.mrc'
 corpo = 'mrcFiles/AUT_CORPO_NAME.mrc'
 topic = 'mrcFiles/AUT_PERSO_NAME.mrc'
+unlinkedAuth = 0 
+matchingAuth = 0
+i = 0
 
 def getAuth1XX(bibEnc):
   if bibEnc == '100' or bibEnc == '700':
@@ -20,39 +28,44 @@ def getAuth1XX(bibEnc):
     return '100'
   elif bibEnc == '650':
     return '150' 
-  
-def link_auth(bibRecord, field, routeAuth): 
-   lenListFields= len(bibRecord.get_fields(field))
-   unlinkedFields = 0
-   authExistent = 0    
-   if lenListFields > 0:
-         listFields = bibRecord.get_fields(field)
-         for fieldInList in listFields:
-            if len(fieldInList.get_subfields('9')) == 0 and len(fieldInList.get_subfields('a')) > 0 :
-                unlinkedFields += 1
-                with open(routeAuth, 'rb') as fh: # dentro del archivo de autoridades
-                  reader = MARCReader(fh)
-                  for recordAuth in reader:
-                      auth1XX = recordAuth.get_fields(getAuth1XX(field))[0].get_subfields('a')[0]
-                      # print(field)
-                      # print(getAuth1XX(field))
-                      # auth1XX = recordAuth.get_fields('100')[0].get_subfields('a')[0]
-                      if len(auth1XX) > 0:
-                        bibEncA = fieldInList.get_subfields('a')[0]
-                        # print(auth1XX)
-                        # print(bibEncA)
-                        if auth1XX  == bibEncA:
-                          print('holi')
-                          authExistent += 1
-                          print(authExistent)
-                          #  print(recordAuth.get_fields('001')[0].value()) 
-  
- 
+
+def link_auth(bibRecord, field, routeAuth):
+  global unlinkedAuth
+  global matchingAuth
+  global i
+  listFields = getFields(bibRecord, field)
+  i = 0        
+  for fieldInList in listFields:
+    #  print(fieldInList)  # CAMINA
+    #  print(getHasUnlinkedAuth(fieldInList))
+    if getHasUnlinkedAuth(fieldInList): 
+      unlinkedAuth = unlinkedAuth + 1
+      print('BN: '+ str(getBiblioNumber(bibRecord))) # CAMINA
+      with open(routeAuth, 'rb') as fh: # dentro del archivo de autoridades
+        reader = MARCReader(fh)
+        for recordAuth in reader:
+          auth1XXSubfieldA = getFieldDollarA(recordAuth, getAuth1XX(field), 0)
+          # print(auth1XXSubfieldA) # CAMINA
+          print(i)
+          bibSubfieldA = getFieldDollarA(bibRecord, field ,i)
+          
+          print(bibSubfieldA)
+          if auth1XXSubfieldA  == bibSubfieldA:
+            matchingAuth = matchingAuth + 1
+            break
+           #  print(recordAuth.get_fields('001')[0].value()) 
+          i = i+1
+
+def print_resume():
+  print("Unlinked authorities: "+str(unlinkedAuth))
+  print("Matching authorities: "+str(matchingAuth))
+    
 def link_perso_100(record):
     link_auth(record, '100', perso)
 
 def link_perso_700(record):
     link_auth(record, '700', perso)
+    # print_resume('700')
 
 def link_topic_650(record):
     link_auth(record, '650', topic)
@@ -66,11 +79,12 @@ def link_corpo_710(record):
 with open(biblios, 'rb') as fh:
     reader = MARCReader(fh)
     for record in reader:
-      link_perso_100(record)
+      # link_perso_100(record)
       link_perso_700(record)
-      link_topic_650(record)
-      link_corpo_110(record)
-      link_corpo_710(record)
+      # link_topic_650(record)
+      # link_corpo_110(record)
+      # link_corpo_710(record)
+    print_resume()
   
     
   

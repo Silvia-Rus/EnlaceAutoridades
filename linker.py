@@ -6,12 +6,9 @@ from getters import getBiblioNumber
 
 # from getters import getLenListFields
 
-# biblios = 'mrcFiles/BIB_TODOS.mrc'
+biblios = 'mrcFiles/BIB_TODOS.mrc'
 # biblios = 'mrcFiles/BIB_14REG.mrc'
-
-# biblios = 'EnlaceAutoridades-main/mrcFiles/BIB_14REG.mrc'
-
-biblios = 'mrcFiles/BIB_1REG.mrc'
+# biblios = 'mrcFiles/BIB_1REG.mrc'
 
 perso = 'mrcFiles/AUT_PERSO_NAME.mrc'
 # perso = 'mrcFiles/AUT_PERSO_NAME_test.mrc'
@@ -19,7 +16,6 @@ corpo = 'mrcFiles/AUT_CORPO_NAME.mrc'
 topic = 'mrcFiles/AUT_PERSO_NAME.mrc'
 unlinkedAuth = 0 
 matchingAuth = 0
-i = 0
 
 def getAuth1XX(bibEnc):
   if bibEnc == '100' or bibEnc == '700':
@@ -32,29 +28,33 @@ def getAuth1XX(bibEnc):
 def link_auth(bibRecord, field, routeAuth):
   global unlinkedAuth
   global matchingAuth
-  global i
   listFields = getFields(bibRecord, field)
-  i = 0        
-  for fieldInList in listFields:
-    #  print(fieldInList)  # CAMINA
+  i = 0   
+   # aqui gira la lista de canpos X00 del bib     
+  for fieldInList in listFields:             
+    #  print(fieldInList)  
     #  print(getHasUnlinkedAuth(fieldInList))
+    # print(i)
+    print('BN: '+ str(getBiblioNumber(bibRecord))) 
+
     if getHasUnlinkedAuth(fieldInList): 
       unlinkedAuth = unlinkedAuth + 1
-      print('BN: '+ str(getBiblioNumber(bibRecord))) # CAMINA
+      # print('BN: '+ str(getBiblioNumber(bibRecord)))
       with open(routeAuth, 'rb') as fh: # dentro del archivo de autoridades
         reader = MARCReader(fh)
         for recordAuth in reader:
           auth1XXSubfieldA = getFieldDollarA(recordAuth, getAuth1XX(field), 0)
+          print(recordAuth.get_fields('001')[0].value()) 
           # print(auth1XXSubfieldA) # CAMINA
-          print(i)
+        
           bibSubfieldA = getFieldDollarA(bibRecord, field ,i)
-          
-          print(bibSubfieldA)
+
+          # print(bibSubfieldA)
           if auth1XXSubfieldA  == bibSubfieldA:
             matchingAuth = matchingAuth + 1
             break
            #  print(recordAuth.get_fields('001')[0].value()) 
-          i = i+1
+    i = i+1
 
 def print_resume():
   print("Unlinked authorities: "+str(unlinkedAuth))
@@ -80,8 +80,8 @@ with open(biblios, 'rb') as fh:
     reader = MARCReader(fh)
     for record in reader:
       # link_perso_100(record)
-      link_perso_700(record)
-      # link_topic_650(record)
+      # link_perso_700(record)
+      link_topic_650(record)
       # link_corpo_110(record)
       # link_corpo_710(record)
     print_resume()

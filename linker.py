@@ -4,6 +4,7 @@ from getters import getHasUnlinkedAuth
 from getters import getFields
 from getters import getBiblioNumber
 
+
 # from getters import getLenListFields
 
 biblios = 'mrcFiles/BIB_TODOS.mrc'
@@ -16,6 +17,7 @@ corpo = 'mrcFiles/AUT_CORPO_NAME.mrc'
 topic = 'mrcFiles/AUT_PERSO_NAME.mrc'
 unlinkedAuth = 0 
 matchingAuth = 0
+recordCounter = 1
 
 def getAuth1XX(bibEnc):
   if bibEnc == '100' or bibEnc == '700':
@@ -26,8 +28,11 @@ def getAuth1XX(bibEnc):
     return '150' 
 
 def link_auth(bibRecord, field, routeAuth):
+  
   global unlinkedAuth
   global matchingAuth
+  global recordCounter
+  print(recordCounter)
   listFields = getFields(bibRecord, field)
   i = 0   
    # aqui gira la lista de canpos X00 del bib     
@@ -35,8 +40,7 @@ def link_auth(bibRecord, field, routeAuth):
     #  print(fieldInList)  
     #  print(getHasUnlinkedAuth(fieldInList))
     # print(i)
-    print('BN: '+ str(getBiblioNumber(bibRecord))) 
-
+    # print('BN: '+ str(getBiblioNumber(bibRecord))) 
     if getHasUnlinkedAuth(fieldInList): 
       unlinkedAuth = unlinkedAuth + 1
       # print('BN: '+ str(getBiblioNumber(bibRecord)))
@@ -44,7 +48,7 @@ def link_auth(bibRecord, field, routeAuth):
         reader = MARCReader(fh)
         for recordAuth in reader:
           auth1XXSubfieldA = getFieldDollarA(recordAuth, getAuth1XX(field), 0)
-          print(recordAuth.get_fields('001')[0].value()) 
+          # print(recordAuth.get_fields('001')[0].value()) 
           # print(auth1XXSubfieldA) # CAMINA
         
           bibSubfieldA = getFieldDollarA(bibRecord, field ,i)
@@ -55,6 +59,7 @@ def link_auth(bibRecord, field, routeAuth):
             break
            #  print(recordAuth.get_fields('001')[0].value()) 
     i = i+1
+  recordCounter = recordCounter+1
 
 def print_resume():
   print("Unlinked authorities: "+str(unlinkedAuth))

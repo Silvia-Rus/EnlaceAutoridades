@@ -2,7 +2,8 @@ from pymarc import MARCReader
 from getters import getFieldDollarA
 from getters import getHasUnlinkedAuth
 from getters import getFields
-from getters import getBiblioNumber
+from getters import getBiblioNumber  
+from connector import throwQuery
 
 
 # from getters import getLenListFields

@@ -5,7 +5,9 @@ def query(field, subfield, text):
     selectPart = 'SELECT a.authid, a.authtypecode, '+extractValue
     fromPart = ' FROM auth_header a '
     wherePart = 'WHERE '+extractValue+'="'+text+'"'
+    # print(selectPart+fromPart+wherePart)
     return selectPart+fromPart+wherePart
+   
 
 def throwQuery(field,subfield,text):
     connection = -1
@@ -28,7 +30,7 @@ def throwQuery(field,subfield,text):
             connection.close()
         return results
 
-print(throwQuery('100','a','Baldwin, John S.,')) #test = [(1, u'PERSO_NAME', u'Baldwin, John S.,')]
+# print(throwQuery('100','a','Baldwin, John S.,')) #test = [(1, u'PERSO_NAME', u'Baldwin, John S.,')]
 
 
 

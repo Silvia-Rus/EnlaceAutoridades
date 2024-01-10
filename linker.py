@@ -3,13 +3,15 @@ from getters import getFieldDollarA
 from getters import getHasUnlinkedAuth
 from getters import getFields
 from getters import getBiblioNumber  
+from getters import getListDollarA
+
 from connector import throwQuery
 
 
 # from getters import getLenListFields
 
-biblios = 'mrcFiles/BIB_TODOS.mrc'
-# biblios = 'mrcFiles/BIB_14REG.mrc'
+# biblios = 'mrcFiles/BIB_TODOS.mrc'
+biblios = 'mrcFiles/BIB_14REG.mrc'
 # biblios = 'mrcFiles/BIB_1REG.mrc'
 
 perso = 'mrcFiles/AUT_PERSO_NAME.mrc'
@@ -20,46 +22,21 @@ unlinkedAuth = 0
 matchingAuth = 0
 recordCounter = 1
 
-def getAuth1XX(bibEnc):
-  if bibEnc == '100' or bibEnc == '700':
-    return '100'
-  elif bibEnc == '110' or bibEnc == '710':
-    return '100'
-  elif bibEnc == '650':
-    return '150' 
-
-def link_auth(bibRecord, field, routeAuth):
-  
+def link_auth(bibRecord, field, auth): 
   global unlinkedAuth
   global matchingAuth
   global recordCounter
-  print(recordCounter)
-  listFields = getFields(bibRecord, field)
-  i = 0   
-   # aqui gira la lista de canpos X00 del bib     
+  # print(recordCounter)
+  listFields = getFields(bibRecord, field) #toma TODOS los encabezamientos del 650
   for fieldInList in listFields:             
-    #  print(fieldInList)  
-    #  print(getHasUnlinkedAuth(fieldInList))
-    # print(i)
-    # print('BN: '+ str(getBiblioNumber(bibRecord))) 
-    if getHasUnlinkedAuth(fieldInList): 
-      unlinkedAuth = unlinkedAuth + 1
-      # print('BN: '+ str(getBiblioNumber(bibRecord)))
-      with open(routeAuth, 'rb') as fh: # dentro del archivo de autoridades
-        reader = MARCReader(fh)
-        for recordAuth in reader:
-          auth1XXSubfieldA = getFieldDollarA(recordAuth, getAuth1XX(field), 0)
-          # print(recordAuth.get_fields('001')[0].value()) 
-          # print(auth1XXSubfieldA) # CAMINA
-        
-          bibSubfieldA = getFieldDollarA(bibRecord, field ,i)
-
-          # print(bibSubfieldA)
-          if auth1XXSubfieldA  == bibSubfieldA:
-            matchingAuth = matchingAuth + 1
-            break
-           #  print(recordAuth.get_fields('001')[0].value()) 
-    i = i+1
+    if getHasUnlinkedAuth(fieldInList):    #filtra los SIN $9
+      # unlinkedAuth = unlinkedAuth + 1
+      biblionumber = getBiblioNumber(record)
+      dollarA = getListDollarA(fieldInList)[0]
+      result = throwQuery(auth, 'a', dollarA)[0]
+      print("EN REG:  BN:  "+str(biblionumber)+" - "+str(field)+"$a: "+str(dollarA))
+      print("EN BASE: 001: "+str(result[0])+" -  "+str(auth)+"$a "+str(result[2]))
+      print("-----------")
   recordCounter = recordCounter+1
 
 def print_resume():
@@ -74,7 +51,7 @@ def link_perso_700(record):
     # print_resume('700')
 
 def link_topic_650(record):
-    link_auth(record, '650', topic)
+    link_auth(record, '650', '150')
 
 def link_corpo_110(record):
     link_auth(record, '110', corpo)
@@ -90,7 +67,7 @@ with open(biblios, 'rb') as fh:
       link_topic_650(record)
       # link_corpo_110(record)
       # link_corpo_710(record)
-    print_resume()
+    # print_resume()
   
     
   

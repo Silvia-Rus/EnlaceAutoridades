@@ -3,8 +3,6 @@ from getters import getFieldDollarA
 from getters import getHasUnlinkedAuth
 from getters import getFields
 from getters import getBiblioNumber  
-from getters import getListDollarA
-
 from connector import throwQuery
 
 
@@ -14,13 +12,9 @@ from connector import throwQuery
 biblios = 'mrcFiles/BIB_14REG.mrc'
 # biblios = 'mrcFiles/BIB_1REG.mrc'
 
-perso = 'mrcFiles/AUT_PERSO_NAME.mrc'
-# perso = 'mrcFiles/AUT_PERSO_NAME_test.mrc'
-corpo = 'mrcFiles/AUT_CORPO_NAME.mrc'
-topic = 'mrcFiles/AUT_PERSO_NAME.mrc'
 unlinkedAuth = 0 
 matchingAuth = 0
-recordCounter = 1
+recordCounter = 0
 
 def link_auth(bibRecord, field, auth): 
   global unlinkedAuth
@@ -30,34 +24,40 @@ def link_auth(bibRecord, field, auth):
   listFields = getFields(bibRecord, field) #toma TODOS los encabezamientos del 650
   for fieldInList in listFields:             
     if getHasUnlinkedAuth(fieldInList):    #filtra los SIN $9
-      # unlinkedAuth = unlinkedAuth + 1
+      unlinkedAuth = unlinkedAuth + 1
       biblionumber = getBiblioNumber(record)
-      dollarA = getListDollarA(fieldInList)[0]
-      result = throwQuery(auth, 'a', dollarA)[0]
-      print("EN REG:  BN:  "+str(biblionumber)+" - "+str(field)+"$a: "+str(dollarA))
-      print("EN BASE: 001: "+str(result[0])+" -  "+str(auth)+"$a "+str(result[2]))
+      dollarA = getFieldDollarA(bibRecord, field, 0)
+      results = throwQuery(auth, 'a', dollarA)
+      print("EN REG:  BN:  "+biblionumber.encode('utf-8')+" - "+field.encode('utf-8')+"$a: "+dollarA.encode('utf-8'))
+      if len(results) > 0:
+         result = results[0]
+         print("EN BASE: 001: "+str(result[0])+" - "+str(auth)+"$a: "+result[2].encode('utf-8'))
+         matchingAuth = matchingAuth+1
+      else:
+         print("No matching authorities.")
       print("-----------")
   recordCounter = recordCounter+1
 
 def print_resume():
+  print("Records examined:     "+str(recordCounter))
   print("Unlinked authorities: "+str(unlinkedAuth))
-  print("Matching authorities: "+str(matchingAuth))
+  print("Matched authorities:  "+str(matchingAuth))
     
 def link_perso_100(record):
-    link_auth(record, '100', perso)
+    link_auth(record, '100', '100')
 
 def link_perso_700(record):
-    link_auth(record, '700', perso)
+    link_auth(record, '700', '100')
     # print_resume('700')
 
 def link_topic_650(record):
     link_auth(record, '650', '150')
 
 def link_corpo_110(record):
-    link_auth(record, '110', corpo)
+    link_auth(record, '110', '110')
 
 def link_corpo_710(record):
-    link_auth(record, '710', corpo)
+    link_auth(record, '710', '110')
 
 with open(biblios, 'rb') as fh:
     reader = MARCReader(fh)
@@ -67,7 +67,7 @@ with open(biblios, 'rb') as fh:
       link_topic_650(record)
       # link_corpo_110(record)
       # link_corpo_710(record)
-    # print_resume()
+    print_resume()
   
     
   

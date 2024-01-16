@@ -4,7 +4,8 @@ from getters import getHasUnlinkedAuth
 from getters import getFields
 from getters import getBiblioNumber  
 from connector import throwQuery
-
+from exporter import createCSV
+from exporter import writeCSV
 
 # from getters import getLenListFields
 
@@ -22,11 +23,12 @@ def link_auth(bibRecord, field, auth):
   global recordCounter
   # print(recordCounter)
   listFields = getFields(bibRecord, field) #toma TODOS los encabezamientos del 650
-  for fieldInList in listFields:             
+  i = 0   
+  for fieldInList in listFields:          
     if getHasUnlinkedAuth(fieldInList):    #filtra los SIN $9
       unlinkedAuth = unlinkedAuth + 1
       biblionumber = getBiblioNumber(record)
-      dollarA = getFieldDollarA(bibRecord, field, 0)
+      dollarA = getFieldDollarA(bibRecord, field, i)
       results = throwQuery(auth, 'a', dollarA)
       print("EN REG:  BN:  "+biblionumber.encode('utf-8')+" - "+field.encode('utf-8')+"$a: "+dollarA.encode('utf-8'))
       if len(results) > 0:
@@ -34,8 +36,10 @@ def link_auth(bibRecord, field, auth):
          print("EN BASE: 001: "+str(result[0])+" - "+str(auth)+"$a: "+result[2].encode('utf-8'))
          matchingAuth = matchingAuth+1
       else:
+         writeCSV(field.encode('utf-8'),biblionumber.encode('utf-8'), dollarA.encode('utf-8'))
          print("No matching authorities.")
       print("-----------")
+    i = i+1
   recordCounter = recordCounter+1
 
 def print_resume():
@@ -59,6 +63,7 @@ def link_corpo_110(record):
 def link_corpo_710(record):
     link_auth(record, '710', '110')
 
+createCSV()
 with open(biblios, 'rb') as fh:
     reader = MARCReader(fh)
     for record in reader:

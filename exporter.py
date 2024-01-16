@@ -14,7 +14,8 @@ def createCSV():
         writer.writerow(header)
 
 def writeCSV(field, BN, auth):
-    link = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/catalogue/detail.pl?biblionumber='+BN
+    link = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber='+BN+'#tab6XX'
+    # link = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/catalogue/detail.pl?biblionumber='+BN
     data = [field, link, BN, auth]
     with open('export.csv', 'a') as f:
         writer = csv.writer(f)

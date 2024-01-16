@@ -6,11 +6,10 @@ from getters import getBiblioNumber
 from connector import throwQuery
 from exporter import createCSV
 from exporter import writeCSV
-
 # from getters import getLenListFields
 
-# biblios = 'mrcFiles/BIB_TODOS.mrc'
-biblios = 'mrcFiles/BIB_14REG.mrc'
+biblios = 'mrcFiles/BIB_TODOS.mrc'
+# biblios = 'mrcFiles/BIB_14REG.mrc'
 # biblios = 'mrcFiles/BIB_1REG.mrc'
 
 unlinkedAuth = 0 
@@ -30,13 +29,13 @@ def link_auth(bibRecord, field, auth):
       biblionumber = getBiblioNumber(record)
       dollarA = getFieldDollarA(bibRecord, field, i)
       results = throwQuery(auth, 'a', dollarA)
-      print("EN REG:  BN:  "+biblionumber.encode('utf-8')+" - "+field.encode('utf-8')+"$a: "+dollarA.encode('utf-8'))
+      print("EN REG:  BN:  "+str(biblionumber)+" - "+str(field)+"$a: "+dollarA)
       if len(results) > 0:
          result = results[0]
          print("EN BASE: 001: "+str(result[0])+" - "+str(auth)+"$a: "+result[2].encode('utf-8'))
          matchingAuth = matchingAuth+1
       else:
-         writeCSV(field.encode('utf-8'),biblionumber.encode('utf-8'), dollarA.encode('utf-8'))
+         writeCSV(field.encode('utf-8'),biblionumber.encode('utf-8'), dollarA)
          print("No matching authorities.")
       print("-----------")
     i = i+1

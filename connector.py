@@ -1,15 +1,21 @@
 import mysql.connector
 
-def query(field, subfield, text):
-    extractValue = '''ExtractValue(a.marcxml, '//datafield[@tag="'''+field+'"]/subfield[@code="'+subfield+'''"]')'''
-    selectPart = 'SELECT a.authid, a.authtypecode, '+extractValue
+def formExtractValue(field, subfield):
+    return '''ExtractValue(a.marcxml, '//datafield[@tag="'''+field+'"]/subfield[@code="'+subfield+'''"]')'''
+
+def query(field, subfieldOne, textOne, subfieldTwo, textTwo):
+    extractValueOne = formExtractValue(field, subfieldOne)
+    extractValueTwo = formExtractValue(field, subfieldTwo)
+    selectPart = 'SELECT a.authid, a.authtypecode, '+extractValueOne+', '+extractValueTwo
     fromPart = ' FROM auth_header a '
-    wherePart = 'WHERE '+extractValue+'="'+text+'"'
-    # print(selectPart+fromPart+wherePart)
+    if(str(textTwo) == 'None'):
+        wherePart = 'WHERE '+extractValueOne+'="'+textOne+'"'
+    else:
+        wherePart = 'WHERE '+extractValueOne+'="'+textOne+'" AND '+extractValueTwo+'="'+textTwo+'"'
     return selectPart+fromPart+wherePart
    
 
-def throwQuery(field,subfield,text):
+def throwQuery(field,subfieldOne,textOne,subfieldTwo = 'd',textTwo = 'None'):
     connection = -1
     try:
         connection =  mysql.connector.connect(
@@ -20,7 +26,8 @@ def throwQuery(field,subfield,text):
                       database='koha_biblioteca',
                       charset='utf8')
         cursor = connection.cursor()
-        cursor.execute(query(field, subfield, text))
+        # cursor.execute(queryOneSubfield(field, subfieldOne, textOne))
+        cursor.execute(query(field, subfieldOne, textOne, subfieldTwo, textTwo))
         results = cursor.fetchall()
     except mysql.connector.Error as error:
         print("ERROR CONNECTING:", error)

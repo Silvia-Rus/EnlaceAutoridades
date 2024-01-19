@@ -4,9 +4,6 @@ from pymarc import MARCReader
 def getFields(record, field):
    return record.get_fields(field)
 
-# def getLenListFields(record, field):
-#    return len(getFields(record, field))
-
 #SUBFIELDS
 def getSubfields(field, subfield):
     return field.get_subfields(subfield) #devuelve una lista
@@ -32,8 +29,12 @@ def getNRSubfield(record, field, subfield, index): #ESTE INDEX ES PARA LOS CAMPO
 def getFieldDollarA(record, field, index):
    return getNRSubfield(record, field, 'a', index)
 
+def getFieldDollarB(record, field, index):
+   return getNRSubfield(record, field, 'b', index)
+
 def getFieldDollarD(record, field, index):
    return getNRSubfield(record, field, 'd', index)
+
 
 def getBiblioNumber(record):
    return record.get_fields('999')[0].get_subfields('c')[0]

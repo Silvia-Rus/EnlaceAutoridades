@@ -8,15 +8,15 @@ import csv
 # print(no_lines)
 
 def createCSV():
-    header = ['Field','Link', 'BN', 'Unlinked Auth']
+    header = ['Field','Link', 'BN', '$a', 'SF2']
     with open('export.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(header)
 
-def writeCSV(field, BN, auth):
+def writeCSV(field, BN, dollarA, subfieldTwoText = ''):
     link = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber='+BN+'#tab6XX'
     # link = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/catalogue/detail.pl?biblionumber='+BN
-    data = [field, link, BN, auth]
+    data = [field, link, BN, dollarA, subfieldTwoText]
     with open('export.csv', 'a') as f:
         writer = csv.writer(f)
         writer.writerow(data)

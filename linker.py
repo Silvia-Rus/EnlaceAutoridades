@@ -1,6 +1,8 @@
 from pymarc import MARCReader
 from getters import getFieldDollarA
+from getters import getFieldDollarB
 from getters import getFieldDollarD
+from getters import getNRSubfield
 from getters import getHasUnlinkedAuth
 from getters import getFields
 from getters import getBiblioNumber  
@@ -26,31 +28,43 @@ def link_auth(bibRecord, field, auth):
   for fieldInList in listFields:          
     if getHasUnlinkedAuth(fieldInList):    #filtra los SIN $9
       unlinkedAuth += 1
-      biblionumber = getBiblioNumber(bibRecord)
-      dollarA      = getFieldDollarA(bibRecord, field, i)
-      subfieldTwo  = ''
 
-      if field == '650': 
-         results = throwQuery(auth, 'a', dollarA) 
-         print(logInfoReg(biblionumber, field , 'a', dollarA))
-      elif field == '100':
-         dollarD = getFieldDollarD(bibRecord, field, i)
-         results = throwQuery(auth, 'a', dollarA, 'd', dollarD) 
-         print(logInfoReg(biblionumber, field , 'a', dollarA, 'd', dollarD))
-
-      
+      #PREPARING
+      biblionumber     = getBiblioNumber(bibRecord)
+      dollarA          = getFieldDollarA(bibRecord, field, i)
+      subfieldTwo      = subfieldTwoReturn(field)
+      #MATCHING
+      matchAuth       = matchReturn(record, auth, field, dollarA, biblionumber, i, subfieldTwo)
+      results         = matchAuth[0]
+      subfieldTwoText = matchAuth[1]
+         
+      #WRITING
       if len(results) > 0:
          result = results[0]
          print(logInfoDB(auth, result, subfieldTwo))
          matchingAuth += 1
       else:
-         writeCSV(field.encode('utf-8'),biblionumber.encode('utf-8'), dollarA)
+         writeCSV(field.encode('utf-8'),biblionumber.encode('utf-8'), dollarA, subfieldTwoText)
          print("No matching authorities.")
       print("-----------")
     i += 1
   recordCounter = recordCounter+1
 
+def subfieldTwoReturn(field):
+     if field == '100' or field == '700' :
+      return 'd'
+     elif field == '110' or field == '710' : 
+      return 'b'
+     else:
+      return ''
    
+def matchReturn(record, auth, field, dollarA, biblionumber, i, subfieldTwo = ''):
+   if    subfieldTwo    != '': subfieldTwoText = getNRSubfield(record,field,subfieldTwo,i)
+   else: subfieldTwoText = ''
+   results = throwQuery(auth, 'a', dollarA, subfieldTwo, subfieldTwoText) 
+   print(logInfoReg(biblionumber, field , 'a', dollarA, subfieldTwo, subfieldTwoText))
+   return [results, subfieldTwoText]
+
 def print_resume():
   print("Records examined:     "+str(recordCounter))
   print("Unlinked authorities: "+str(unlinkedAuth))
@@ -58,12 +72,14 @@ def print_resume():
 
 def logInfoReg(biblionumber, field, subfieldOne, textOne, subfieldTwo = '', textTwo = ''):
   text = "EN REG:  BN:  "+str(biblionumber)+" - "+str(field)+"$"+subfieldOne+": "+textOne
-  if field != '650': text += " $"+subfieldTwo+": "+str(textTwo) 
+  if field != '650': 
+     text += " $"+subfieldTwo+": "+str(textTwo) 
   return text
      
 def logInfoDB(auth, result, subfieldTwo):
-  text = "EN BASE: 001: "+str(result[0])+" - "+str(auth)+"$a: "+result[2].encode('utf-8')
-  if result[3].encode('utf-8') != '' : text += "$"+subfieldTwo+": "+str(result[3].encode('utf-8'))
+  text = "EN BASE: 001: "+str(result[0])+" - "+str(auth)+"$a: "+str(result[2].encode('utf-8'))
+  if str(result[3].encode('utf-8')) != '' : 
+     text += "$"+subfieldTwo+": "+str(result[3].encode('utf-8'))
   return text
 
      
@@ -87,8 +103,8 @@ createCSV()
 with open(biblios, 'rb') as fh:
     reader = MARCReader(fh)
     for record in reader:
-      link_perso_100(record)
-      # link_perso_700(record)
+      # link_perso_100(record)
+      link_perso_700(record)
       # link_topic_650(record)
       # link_corpo_110(record)
       # link_corpo_710(record)

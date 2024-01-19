@@ -12,6 +12,7 @@ def query(field, subfieldOne, textOne, subfieldTwo, textTwo):
         wherePart = 'WHERE '+extractValueOne+'="'+textOne+'"'
     else:
         wherePart = 'WHERE '+extractValueOne+'="'+textOne+'" AND '+extractValueTwo+'="'+textTwo+'"'
+    # print(selectPart+fromPart+wherePart)
     return selectPart+fromPart+wherePart
    
 

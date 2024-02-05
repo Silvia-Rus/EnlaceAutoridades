@@ -1,7 +1,10 @@
 import csv  
 
-unmatchedName = 'unmatchedExport'
-matchedName   = 'matchedExport'
+
+directory = 'reports/'
+unmatchedName = directory+'unmatchedExport'
+matchedName   = directory+'matchedExport'
+counterName   = directory+'counterExport'
 linkCatalogBib = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber='
 linkCatalogAut = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid='
 
@@ -18,6 +21,16 @@ def createCSVMatched():
     #revisar
     header = ['Field','BN','$9','$a', 'SF2','Aut','Biblio']
     createCSV(matchedName, header)
+
+def createCSVCounters():
+    #revisar
+    header = ['REPORT']
+    createCSV(counterName, header)
+
+def initCSV():
+    createCSVUnmatched()
+    createCSVMatched()
+    createCSVCounters()
 
 def formLinkBib(field, BN):
     numberField = field[0]
@@ -47,3 +60,12 @@ def writeCSVMatched(data):
     linkAut = formLinkAut(subfield9Text)
     data.append(linkAut)
     writeCSV(matchedName, data)
+
+def writeCSVCounter(data):
+     with open(counterName+'.csv', 'a') as f:
+        writer = csv.writer(f)
+        for d in data:
+            print(d[0]+d[1])
+            writer.writerow(d)
+
+

@@ -38,6 +38,17 @@ def throwQuery(field,subfieldOne,textOne,subfieldTwo = 'd',textTwo = 'None'):
             connection.close()
         return results
 
+def findMatchingAuth(auth, field, firstSubfieldText, biblionumber,secondSubfield, secondSubfieldText):
+   results = throwQuery(auth, 'a', firstSubfieldText, secondSubfield, secondSubfieldText) 
+   print(logInfoRecord(biblionumber, field , 'a', firstSubfieldText, secondSubfield, secondSubfieldText))
+   return results
+
+def logInfoRecord(biblionumber, field, subfieldOne, textOne, subfieldTwo = '', textTwo = ''):
+  text = "EN REG:  BN:  "+str(biblionumber)+" - "+str(field)+"$"+subfieldOne+": "+textOne
+  if field != '650': 
+     text += " $"+subfieldTwo+": "+str(textTwo) 
+  return text
+
 # print(throwQuery('100','a','Baldwin, John S.,')) #test = [(1, u'PERSO_NAME', u'Baldwin, John S.,')]
 
 

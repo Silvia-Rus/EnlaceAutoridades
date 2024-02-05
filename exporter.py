@@ -1,22 +1,49 @@
 import csv  
 
-# header = ['name', 'area', 'country_code2', 'country_code3']
-# data = ['Afghanistan', 652090, 'AF', 'AFG']
+unmatchedName = 'unmatchedExport'
+matchedName   = 'matchedExport'
+linkCatalogBib = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber='
+linkCatalogAut = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid='
 
-# reader = csv.reader(open("employees.csv"))
-# no_lines= len(list(reader))
-# print(no_lines)
-
-def createCSV():
-    header = ['Field','Link', 'BN', '$a', 'SF2']
-    with open('export.csv', 'w') as f:
+def createCSV(name, header):
+    with open(name+'.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(header)
 
-def writeCSV(field, BN, dollarA, subfieldTwoText = ''):
-    link = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber='+BN+'#tab6XX'
-    # link = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/catalogue/detail.pl?biblionumber='+BN
-    data = [field, link, BN, dollarA, subfieldTwoText]
-    with open('export.csv', 'a') as f:
+def createCSVUnmatched():
+    header = ['Field','BN', '$a', 'SF2','Link']
+    createCSV(unmatchedName, header)
+
+def createCSVMatched():
+    #revisar
+    header = ['Field','BN','$9','$a', 'SF2','Aut','Biblio']
+    createCSV(matchedName, header)
+
+def formLinkBib(field, BN):
+    numberField = field[0]
+    tab = '#tab'+numberField+'XX'
+    link = linkCatalogBib+BN+tab
+    return link
+
+def formLinkAut(subfield9Text):
+    link = linkCatalogAut+subfield9Text+'#tab1XX'
+    return link
+
+
+def writeCSV(name, data):
+    field = data[0]
+    BN = data[1]
+    link = formLinkBib(field, BN)
+    data.append(link)
+    with open(name+'.csv', 'a') as f:
         writer = csv.writer(f)
         writer.writerow(data)
+
+def writeCSVUnmatched(data):
+    writeCSV(unmatchedName, data)
+
+def writeCSVMatched(data):
+    subfield9Text = data[2]
+    linkAut = formLinkAut(subfield9Text)
+    data.append(linkAut)
+    writeCSV(matchedName, data)

@@ -1,59 +1,62 @@
 from pymarc import MARCReader
-from getters import getFieldDollarA
-from getters import getNRSubfield
-from getters import getHasUnlinkedAuth
-from getters import getFields
-from getters import getBiblioNumber  
-from connector import throwQuery
-from exporter import createCSV
-from exporter import writeCSV
-# from getters import getLenListFields
+from getters   import getSubfieldA
+from getters   import getNRSubfield
+from getters   import getHasUnlinkedAuth
+from getters   import getFields
+from getters   import getBiblioNumber  
+from connector import findMatchingAuth
+from exporter  import createCSVUnmatched
+from exporter  import writeCSVUnmatched
+from exporter  import createCSVMatched
+from exporter  import writeCSVMatched
 
 # biblios = 'mrcFiles/BIB_TODOS.mrc'
 biblios = 'mrcFiles/BIB_14REG.mrc'
 # biblios = 'mrcFiles/BIB_1REG.mrc'
 
-unlinkedAuth = 0 
-matchingAuth = 0
+unlinkedAuth  = 0 
+matchingAuth  = 0
 recordCounter = 0
 
-def link_auth(bibRecord, field, auth): 
+def link_auth(bibRecord, field, auth1XX): 
   global unlinkedAuth
   global matchingAuth
   global recordCounter
-  listFields = getFields(bibRecord, field) 
   i = 0   
+  listFields = getFields(bibRecord, field) 
   for fieldInList in listFields: 
     #FILTERING         
     if getHasUnlinkedAuth(fieldInList):  
       unlinkedAuth += 1
-
       #PREPARING
-      biblionumber     = getBiblioNumber(bibRecord)
-      dollarA          = getFieldDollarA(bibRecord, field, i)
-      subfieldTwo      = subfieldTwoReturn(field)
+      biblionumber          = getBiblioNumber(bibRecord)
+      firstSubfieldText     = getSubfieldA(bibRecord, field, i) #generally $a
+      secondSubfield        = getSecondSubfield(field)
+      secondSubfieldText    = getSecondSubfieldText(bibRecord, field, i, secondSubfield)
       #MATCHING
-      matchAuth       = matchReturn(record, auth, field, dollarA, biblionumber, i, subfieldTwo)
-      results         = matchAuth[0]
-      subfieldTwoText = matchAuth[1]
-         
+      results       = findMatchingAuth(auth1XX, field, firstSubfieldText, biblionumber, secondSubfield, secondSubfieldText)
+    
       #PREPARING
       if len(results) > 0:
          result = results[0]
-         print(logInfoDB(auth, result, subfieldTwo))
-         bibRecord.get_fields(field)[i].add_subfield('9', str(result[0]))
+         subfield9Text = str(result[0])
+         print(logInfoDB(auth1XX, result, secondSubfieldText))
+         bibRecord.get_fields(field)[i].add_subfield('9', subfield9Text)
+         data =[field.encode('utf-8'),biblionumber.encode('utf-8'), subfield9Text, firstSubfieldText, secondSubfieldText]
+         writeCSVMatched(data)
          matchingAuth += 1
       else:
-         writeCSV(field.encode('utf-8'),biblionumber.encode('utf-8'), dollarA, subfieldTwoText)
+         data = [field.encode('utf-8'),biblionumber.encode('utf-8'),firstSubfieldText, secondSubfieldText]
+         writeCSVUnmatched(data)
          print("No matching authorities.")
       print("-----------")
     i += 1
-  #WRITTING
+  #WRITING
   with open('prueba14.mrc', 'a') as out:
     out.write(record.as_marc())
   recordCounter = recordCounter+1
 
-def subfieldTwoReturn(field):
+def getSecondSubfield(field):
      if field == '100' or field == '700' :
       return 'd'
      elif field == '110' or field == '710' : 
@@ -61,23 +64,18 @@ def subfieldTwoReturn(field):
      else:
       return ''
    
-def matchReturn(record, auth, field, dollarA, biblionumber, i, subfieldTwo = ''):
-   if    subfieldTwo    != '': subfieldTwoText = getNRSubfield(record,field,subfieldTwo,i)
-   else: subfieldTwoText = ''
-   results = throwQuery(auth, 'a', dollarA, subfieldTwo, subfieldTwoText) 
-   print(logInfoReg(biblionumber, field , 'a', dollarA, subfieldTwo, subfieldTwoText))
-   return [results, subfieldTwoText]
+def getSecondSubfieldText(record, field, i, secondSubfield):
+  if     secondSubfield    != '': 
+     secondSubfieldText = getNRSubfield(record,field, secondSubfield, i)
+  else:  
+     secondSubfieldText = ''
+  return secondSubfieldText
 
 def print_resume():
   print("Records examined:     "+str(recordCounter))
   print("Unlinked authorities: "+str(unlinkedAuth))
   print("Matched authorities:  "+str(matchingAuth))
 
-def logInfoReg(biblionumber, field, subfieldOne, textOne, subfieldTwo = '', textTwo = ''):
-  text = "EN REG:  BN:  "+str(biblionumber)+" - "+str(field)+"$"+subfieldOne+": "+textOne
-  if field != '650': 
-     text += " $"+subfieldTwo+": "+str(textTwo) 
-  return text
      
 def logInfoDB(auth, result, subfieldTwo):
   text = "EN BASE: 001: "+str(result[0])+" - "+str(auth)+"$a: "+str(result[2].encode('utf-8'))
@@ -101,7 +99,8 @@ def link_corpo_110(record):
 def link_corpo_710(record):
     link_auth(record, '710', '110')
 
-createCSV()
+createCSVUnmatched()
+createCSVMatched()
 with open(biblios, 'rb') as fh:
     reader = MARCReader(fh)
     for record in reader:

@@ -26,7 +26,7 @@ def getNRSubfield(record, field, subfield, index): #ESTE INDEX ES PARA LOS CAMPO
    if len(record.get_fields(field)) > 0 and len(record.get_fields(field)[index].get_subfields(subfield)) > 0:
       return record.get_fields(field)[index].get_subfields(subfield)[0].encode('utf-8')
 
-def getFieldDollarA(record, field, index):
+def getSubfieldA(record, field, index):
    return getNRSubfield(record, field, 'a', index)
 
 def getFieldDollarB(record, field, index):

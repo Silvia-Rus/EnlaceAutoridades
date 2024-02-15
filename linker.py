@@ -11,6 +11,7 @@ from exporter  import writeCSVCounter
 from exporter  import initCSV
 
 biblios = 'mrcFiles/BIB_TODOS.mrc'
+# biblios = 'mrcFiles/BIB_500REG_1.mrc'
 # biblios = 'mrcFiles/BIB_14REG.mrc'
 # biblios = 'mrcFiles/BIB_1REG.mrc'
 

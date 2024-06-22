@@ -1,22 +1,40 @@
 import mysql.connector
+from subcampo import Subcampo
+from campo import Campo
 
-def formExtractValue(field, subfield):
-    return '''ExtractValue(a.marcxml, '//datafield[@tag="'''+field+'"]/subfield[@code="'+subfield+'''"]')'''
 
-def query(field, subfieldOne, textOne, subfieldTwo, textTwo):
-    extractValueOne = formExtractValue(field, subfieldOne)
-    extractValueTwo = formExtractValue(field, subfieldTwo)
-    selectPart = 'SELECT a.authid, a.authtypecode, '+extractValueOne+', '+extractValueTwo
-    fromPart = ' FROM auth_header a '
-    if(str(textTwo) == 'None'):
-        wherePart = 'WHERE '+extractValueOne+'="'+textOne+'"'
-    else:
-        wherePart = 'WHERE '+extractValueOne+'="'+textOne+'" AND '+extractValueTwo+'="'+textTwo+'"'
-    # print(selectPart+fromPart+wherePart)
-    return selectPart+fromPart+wherePart
+
+def formExtractValue(campo, subcampo):
+    return '''ExtractValue(a.marcxml, '//datafield[@tag="'''+campo.enAut+'"]/subfield[@code="'+subcampo.letra+'''"]')'''+'="'+subcampo.valor+'"'
+
+# def query(campo, subcampoOne, textOne, subcampoTwo, textTwo):
+#     extractValueOne = formExtractValue(campo, subcampoOne)
+#     extractValueTwo = formExtractValue(campo, subcampoTwo)
+#     selectPart = 'SELECT a.authid, a.authtypecode, '+extractValueOne+', '+extractValueTwo
+#     fromPart = ' FROM auth_header a '
+#     if(str(textTwo) == 'None'):
+#         wherePart = 'WHERE '+extractValueOne+'="'+textOne+'"'
+#     else:
+#         wherePart = 'WHERE '+extractValueOne+'="'+textOne+'" AND '+extractValueTwo+'="'+textTwo+'"'
+#     # print(selectPart+fromPart+wherePart)
+#     return selectPart+fromPart+wherePart
    
+def query(campo):
+    selectPart = 'SELECT a.authid '
+    fromPart = ' FROM auth_header a '
+    wherePart = 'WHERE '
+    i = len(campo.subcampos)
+    
+    for sc in campo.subcampos:
+        extractValue = formExtractValue(campo, sc)
+        wherePart += extractValue
+        if(i > 1):
+            wherePart += ' AND '
+        i -= 1
+    print(selectPart+fromPart+wherePart)
+    return selectPart+fromPart+wherePart
 
-def throwQuery(field,subfieldOne,textOne,subfieldTwo = 'd',textTwo = 'None'):
+def throwQuery(campo):
     connection = -1
     try:
         connection =  mysql.connector.connect(
@@ -27,8 +45,8 @@ def throwQuery(field,subfieldOne,textOne,subfieldTwo = 'd',textTwo = 'None'):
                       database='koha_biblioteca',
                       charset='utf8')
         cursor = connection.cursor()
-        # cursor.execute(queryOneSubfield(field, subfieldOne, textOne))
-        cursor.execute(query(field, subfieldOne, textOne, subfieldTwo, textTwo))
+        # cursor.execute(queryOneSubcampo(campo, subcampoOne, textOne))
+        cursor.execute(query(campo))
         results = cursor.fetchall()
     except mysql.connector.Error as error:
         print("ERROR CONNECTING:", error)
@@ -38,15 +56,15 @@ def throwQuery(field,subfieldOne,textOne,subfieldTwo = 'd',textTwo = 'None'):
             connection.close()
         return results
 
-def findMatchingAuth(auth, field, firstSubfieldText, biblionumber,secondSubfield, secondSubfieldText):
-   results = throwQuery(auth, 'a', firstSubfieldText, secondSubfield, secondSubfieldText) 
-   print(logInfoRecord(biblionumber, field , 'a', firstSubfieldText, secondSubfield, secondSubfieldText))
+def findMatchingAuth(campo):
+   results = throwQuery(campo) 
+   #print(logInfoRecord(biblionumber, campo , 'a', firstSubcampoText, secondSubcampo, secondSubcampoText))
    return results
 
-def logInfoRecord(biblionumber, field, subfieldOne, textOne, subfieldTwo = '', textTwo = ''):
-  text = "EN REG:  BN:  "+str(biblionumber)+" - "+str(field)+"$"+subfieldOne+": "+textOne
-  if field != '650': 
-     text += " $"+subfieldTwo+": "+str(textTwo) 
+def logInfoRecord(biblionumber, campo, subcampoOne, textOne, subcampoTwo = '', textTwo = ''):
+  text = "EN REG:  BN:  "+str(biblionumber)+" - "+str(campo)+"$"+subcampoOne+": "+textOne
+  if campo != '650': 
+     text += " $"+subcampoTwo+": "+str(textTwo) 
   return text
 
 # print(throwQuery('100','a','Baldwin, John S.,')) #test = [(1, u'PERSO_NAME', u'Baldwin, John S.,')]

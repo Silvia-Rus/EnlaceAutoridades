@@ -64,7 +64,7 @@ def writeCSVCounter(recordCounter, unlinkedAuth, matchingAuth):
     texto = ''
     data1 = ["Registros analizados: ", str(recordCounter)]
     data2 = ["Autoridades sin enlazar: " , str(unlinkedAuth)]
-    data3 = ["Autoridades enalzadas: "  , str(matchingAuth)]
+    data3 = ["Autoridades enlazadas: "  , str(matchingAuth)]
     data = [data1, data2, data3]
     with open(counterName+'.csv', 'a') as f:
         writer = csv.writer(f)

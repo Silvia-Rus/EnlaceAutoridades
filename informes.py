@@ -1,10 +1,11 @@
 import csv  
+from datetime import datetime
 
-
-directory = 'reports/'
-unmatchedName = directory+'unmatchedExport'
-matchedName   = directory+'matchedExport'
-counterName   = directory+'counterExport'
+fechaAhora = datetime.now().strftime("%Y%m%d%H%M%S")
+directory = 'archivos/reports/'
+unmatchedName = directory+fechaAhora+'_unmatchedExport'
+matchedName   = directory+fechaAhora+'_matchedExport'
+counterName   = directory+fechaAhora+'_counterExport'
 linkCatalogBib = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber='
 linkCatalogAut = 'http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid='
 
@@ -14,12 +15,12 @@ def createCSV(name, header):
         writer.writerow(header)
 
 def createCSVUnmatched():
-    header = ['Field','BN', '$a', 'SF2','Link']
+    header = ['Link', 'BN','Campo','$a', 'SC2']
     createCSV(unmatchedName, header)
 
 def createCSVMatched():
     #revisar
-    header = ['Field','BN','$9','$a', 'SF2','Aut','Biblio']
+    header = ['Aut','Biblio','BN','Campo','$9','$a', 'SC2']
     createCSV(matchedName, header)
 
 def createCSVCounters():
@@ -32,44 +33,46 @@ def initCSV():
     createCSVMatched()
     createCSVCounters()
 
-def formLinkBib(field, BN):
-    numberField = field[0]
-    tab = '#tab'+numberField+'XX'
-    link = linkCatalogBib+BN+tab
-    return link
-
-def formLinkAut(subfield9Text):
-    link = linkCatalogAut+subfield9Text+'#tab1XX'
-    return link
-
 def writeCSV(name, data):
-    field = data[0]
-    BN = data[1]
-    link = formLinkBib(field, BN)
-    data.append(link)
     with open(name+'.csv', 'a') as f:
         writer = csv.writer(f)
         writer.writerow(data)
 
-def writeCSVUnmatched(data):
+def writeCSVUnmatched(biblionumber, campo):
+    data = []
+    data.append(linkCatalogBib+biblionumber)
+    data.append(biblionumber)
+    data.append(campo.campo)
+    for sc in campo.subcampos:
+        data.append(sc.valor)
     writeCSV(unmatchedName, data)
+    return "BN:"+biblionumber+" - Campo: "+str(campo.campo)+" (NO enlazado)\n"
 
-def writeCSVMatched(data):
-    subfield9Text = data[2]
-    linkAut = formLinkAut(subfield9Text)
-    data.append(linkAut)
+def writeCSVMatched(biblionumber, SC9, campo):
+    data = []
+    data.append(linkCatalogAut+SC9)
+    data.append(linkCatalogBib+biblionumber)
+    data.append(biblionumber)
+    data.append(campo.campo)
+    data.append(SC9)
+    for sc in campo.subcampos:
+        data.append(sc.valor)
     writeCSV(matchedName, data)
+    return "BN:"+biblionumber+" - Campo: "+str(campo.campo)+" (Enlazado)\n"
 
-def writeCSVCounter(data):
-     with open(counterName+'.csv', 'a') as f:
+def writeCSVCounter(recordCounter, unlinkedAuth, matchingAuth):
+    texto = ''
+    data1 = ["Registros analizados: ", str(recordCounter)]
+    data2 = ["Autoridades sin enlazar: " , str(unlinkedAuth)]
+    data3 = ["Autoridades enalzadas: "  , str(matchingAuth)]
+    data = [data1, data2, data3]
+    with open(counterName+'.csv', 'a') as f:
         writer = csv.writer(f)
         for d in data:
-            # print(d[0]+d[1])
+            texto += str(d)+"\n"
             writer.writerow(d)
+    return "RESUMEN: \n"+texto
 
-def terminal(data):
-     with open('terminal.csv', 'a') as f:
-        writer = csv.writer(f)
-        writer.writerow(data)
+
 
 

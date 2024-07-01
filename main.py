@@ -38,13 +38,13 @@ if(len(listaDeCampos) > 0):
                 recordBuffer = l.link_auth(listaDeCampos,record)
                 e.escribir(recordBuffer)
             print(writeCSVCounter(l.recordCounter, l.unlinkedAuth, l.matchingAuth))
-            print("Modificacion exitosa:")
-            print("->Puede ver su archivo mrc modificado en archivos/mrcTransformed.")
-            print("->Puede ver los informes completos en archivos/reports.")
+            print("Trasnformacion exitosa:\n"
+                  "->Puede ver su archivo mrc modificado en archivos/mrcTransformed.\n"
+                  "->Puede ver los informes completos en archivos/reports.")
     else:
-           print("No se puede encontrar el archivo .mrc que se quiere modificar. \nRecuerde declararlo correctamente en la variable biblios en main.py")  
+           print("No se puede encontrar el archivo .mrc que se quiere modificar. \nRecuerde declararlo correctamente en la variable 'biblios' en el archivo main.py")  
 else:
-   print("No ha declarado campos para enlazar. \nRecuerde declaralos correctamente en la variable listaDeCampos en main.py ")
+   print("No ha declarado campos para enlazar. \nRecuerde declaralos correctamente en la variable 'listaDeCampos' en el archivo main.py ")
    
 
 

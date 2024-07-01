@@ -1,0 +1,6 @@
+Aut,Biblio,BN,Campo,$9,$a,SC2
+http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid=5380,http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber=14,14,700,5380,"Freeman, Harry M."
+http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid=19380,http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber=15,15,650,19380,LENGUAJES DE PROGRAMACION
+http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid=6451,http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber=15,15,700,6451,"Guerrero, Gabriel"
+http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid=17617,http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber=17,17,650,17617,ELECTROMAGNETISMO
+http://catalogo.fi.uba.ar:8080/cgi-bin/koha/authorities/detail.pl?authid=16173,http://catalogo.fi.uba.ar:8080/cgi-bin/koha/cataloguing/addbiblio.pl?biblionumber=17,17,650,16173,CAMPOS ELECTROMAGNETICOS
